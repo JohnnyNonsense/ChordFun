@@ -28,7 +28,7 @@ public enum Note {
     private final String sAscFlat;
     private final String sUniSharp;
     private final String sUniFlat;
-    private final String sToggleLabel;
+    private final String sDualLabel;
     
     Note(String sLabel) {
         this.orientable = false;
@@ -37,22 +37,22 @@ public enum Note {
         this.sAscFlat = sLabel;
         this.sUniSharp = sLabel;
         this.sUniFlat = sLabel;
-        this.sToggleLabel = sLabel;
+        this.sDualLabel = sLabel;
     }
 
     Note(String sAscSharp, String sAscFlat, String sUniSharp, String sUniFlat,
-            String sToggleLabel) {
+            String sDualLabel) {
         this.orientable = true;
         this.sLabel = "undefined";
         this.sAscSharp = sAscSharp;
         this.sAscFlat = sAscFlat;
         this.sUniSharp = sUniSharp;
         this.sUniFlat = sUniFlat;
-        this.sToggleLabel = sToggleLabel;
+        this.sDualLabel = sDualLabel;
     }
     
-    public String getToggleLabel() {
-        return sToggleLabel;
+    public String getDualLabel() {
+        return sDualLabel;
     }
     
     public String getAsciiLabel(KeyOrientation orientation) {

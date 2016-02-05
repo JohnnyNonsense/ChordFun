@@ -65,4 +65,21 @@ public class ChordDbKey implements Comparable<ChordDbKey> {
         return form;
     }
     
+    public String getAsciiLabel(KeyOrientation orientation) {
+        String sNote = note.getAsciiLabel(orientation);
+        String sForm = form.getLabel();
+        return sNote + sForm;
+    }
+    
+    public String getUnicodeLabel(KeyOrientation orientation) {
+        String sNote = note.getUnicodeLabel(orientation);
+        String sForm = form.getLabel();
+        return sNote + sForm;
+    }
+    
+    public String getDualLabel() {
+        String sNote = note.getDualLabel();
+        String sForm = form.getLabel();
+        return sNote + sForm;
+    }
 }

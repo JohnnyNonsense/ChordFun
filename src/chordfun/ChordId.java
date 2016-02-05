@@ -6,15 +6,24 @@
 package chordfun;
 
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author Greg
  */
 public class ChordId implements Comparable<ChordId> {
+
     private final ChordDbKey key;
     private final int variation;
 
+    
+    public ChordId(Note note, ChordForm form, int variation) {
+        this.key = new ChordDbKey(note, form);
+        this.variation = variation;
+    }
+    
     public ChordId(ChordDbKey key, int variation) {
         this.key = key;
         this.variation = variation;
@@ -24,8 +33,37 @@ public class ChordId implements Comparable<ChordId> {
         return key;
     }
 
+    public Note getNote() {
+        return key.getNote();
+    }
+    
+    public ChordForm getForm() {
+        return key.getForm();
+    }
+
     public int getVariation() {
         return variation;
+    }
+    
+    public String dragStringOf() {
+        String s = "chord|" + key.getNote().ordinal() + "/" + key.getForm().ordinal() + "/" + this.variation;
+        return s;
+    }
+
+    public static ChordId createFromString(String s) {
+        if (s.startsWith("chord|")) {
+            s = s.substring(6);
+        }
+        Pattern p = Pattern.compile("(\\d+)/(\\d+)/(\\d+)$");
+        Matcher m = p.matcher(s);
+        if (m.matches()) {
+            int noteOrd = Integer.parseInt(m.group(1));
+            int formOrd = Integer.parseInt(m.group(2));
+            int variation = Integer.parseInt(m.group(3));
+            return new ChordId(Note.values()[noteOrd], 
+                    ChordForm.values()[formOrd], variation);
+        }
+        return null;
     }
 
     @Override
@@ -62,5 +100,5 @@ public class ChordId implements Comparable<ChordId> {
         }
         return this.variation - o.variation;
     }
-    
+
 }

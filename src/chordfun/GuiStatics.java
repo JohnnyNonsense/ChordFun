@@ -34,7 +34,6 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -56,10 +55,10 @@ public class GuiStatics {
         chordFont = Font.font("Dialog", FontWeight.BOLD, 14);
         intervalFont = Font.font("Arial", FontWeight.THIN, 10);
     }
-    
+
     private static Font chordFont;
     private static Font intervalFont;
-    
+
     public static class ChordRegion extends Region {
 
         private ChordRegion(ChordCanvas canvas) {
@@ -233,7 +232,7 @@ public class GuiStatics {
                     System.out.println("onDragDetected");
                     Dragboard db = startDragAndDrop(TransferMode.COPY);
                     ClipboardContent content = new ClipboardContent();
-                    String sContent = "chord|" + chord.getKey();
+                    String sContent = chord.dragStringOf();
                     System.out.println("content: " + sContent);
                     content.putString(sContent);
                     db.setContent(content);
@@ -242,7 +241,7 @@ public class GuiStatics {
             });
         }
 
-        public static ChordCanvas create(GuitarChord chord, 
+        public static ChordCanvas create(GuitarChord chord,
                 KeyOrientation orientation) {
             ChordCanvas canvas = new ChordCanvas(130, 160, chord, orientation);
             return canvas;
@@ -250,6 +249,7 @@ public class GuiStatics {
     }
 
     public static class ChordUpperScrollPane extends ScrollPane {
+
         private ChordUpperScrollPane() {
             this.setContent(ChordUpperPane.getInstance());
             this.setOnDragOver((DragEvent event) -> {
@@ -269,11 +269,14 @@ public class GuiStatics {
                     GuitarChordBase gcs;
                     try {
                         gcs = GuitarChordBase.getInstance();
-                        GuitarChord gc = gcs.find(db.getString());
-                        if (gc != null) {
-                            System.out.println("got chord: " + gc);
-                            ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
-                            this.getChildren().add(canvas);
+                        ChordId id = ChordId.createFromString(db.getString());
+                        if (id != null) {
+                            GuitarChord gc = gcs.find(id.getKey(), id.getVariation());
+                            if (gc != null) {
+                                System.out.println("got chord: " + gc);
+                                ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
+                                this.getChildren().add(canvas);
+                            }
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(GuiStatics.class.getName()).log(Level.SEVERE, null, ex);
@@ -283,20 +286,21 @@ public class GuiStatics {
                 event.consume();
 
             });
- 
+
         }
+
         private static class ChordUpperScrollPaneHolder {
 
-            private static final ChordUpperScrollPane INSTANCE 
+            private static final ChordUpperScrollPane INSTANCE
                     = new ChordUpperScrollPane();
         }
 
         public static ChordUpperScrollPane getInstance() {
             return ChordUpperScrollPaneHolder.INSTANCE;
         }
-        
+
     }
-    
+
     public static class ChordUpperPane extends TilePane {
 
         private ChordUpperPane() {
@@ -319,11 +323,14 @@ public class GuiStatics {
                     GuitarChordBase gcs;
                     try {
                         gcs = GuitarChordBase.getInstance();
-                        GuitarChord gc = gcs.find(db.getString());
-                        if (gc != null) {
-                            System.out.println("got chord: " + gc);
-                            ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
-                            this.getChildren().add(canvas);
+                        ChordId id = ChordId.createFromString(db.getString());
+                        if (id != null) {
+                            GuitarChord gc = gcs.find(id.getKey(), id.getVariation());
+                            if (gc != null) {
+                                System.out.println("got chord: " + gc);
+                                ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
+                                this.getChildren().add(canvas);
+                            }
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(GuiStatics.class.getName()).log(Level.SEVERE, null, ex);
@@ -344,10 +351,12 @@ public class GuiStatics {
             return ChordUpperPaneHolder.INSTANCE;
         }
     }
+
     public static class ChordDisplayScrollPane extends ScrollPane {
+
         private ChordDisplayScrollPane() {
             this.setContent(ChordDisplayPane.getInstance());
-            
+
             this.setOnDragOver((DragEvent event) -> {
                 System.out.println("dragging over ChordDisplayScrollPane");
                 Dragboard db = event.getDragboard();
@@ -365,12 +374,15 @@ public class GuiStatics {
                     GuitarChordBase gcs;
                     try {
                         gcs = GuitarChordBase.getInstance();
-                        GuitarChord gc = gcs.find(db.getString());
-                        if (gc != null) {
-                            System.out.println("got chord: " + gc);
-                            ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
-                            ChordDisplayPane cdp = ChordDisplayPane.getInstance();
-                            cdp.getChildren().add(canvas);
+                        ChordId id = ChordId.createFromString(db.getString());
+                        if (id != null) {
+                            GuitarChord gc = gcs.find(id.getKey(), id.getVariation());
+                            if (gc != null) {
+                                System.out.println("got chord: " + gc);
+                                ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
+                                ChordDisplayPane cdp = ChordDisplayPane.getInstance();
+                                cdp.getChildren().add(canvas);
+                            }
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(GuiStatics.class.getName()).log(Level.SEVERE, null, ex);
@@ -382,18 +394,19 @@ public class GuiStatics {
             });
 
         }
+
         private static class ChordDisplayScrollPaneHolder {
 
-            private static final ChordDisplayScrollPane INSTANCE 
+            private static final ChordDisplayScrollPane INSTANCE
                     = new ChordDisplayScrollPane();
         }
 
         public static ChordDisplayScrollPane getInstance() {
             return ChordDisplayScrollPaneHolder.INSTANCE;
         }
-        
+
     }
-    
+
     public static class ChordDisplayPane extends TilePane {
 
         private ChordDisplayPane() {
@@ -416,11 +429,14 @@ public class GuiStatics {
                     GuitarChordBase gcs;
                     try {
                         gcs = GuitarChordBase.getInstance();
-                        GuitarChord gc = gcs.find(db.getString());
-                        if (gc != null) {
-                            System.out.println("got chord: " + gc);
-                            ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
-                            this.getChildren().add(canvas);
+                        ChordId id = ChordId.createFromString(db.getString());
+                        if (id != null) {
+                            GuitarChord gc = gcs.find(id.getKey(), id.getVariation());
+                            if (gc != null) {
+                                System.out.println("got chord: " + gc);
+                                ChordCanvas canvas = ChordCanvas.create(gc, KeyOrientation.NONE);
+                                this.getChildren().add(canvas);
+                            }
                         }
                     } catch (IOException ex) {
                         Logger.getLogger(GuiStatics.class.getName()).log(Level.SEVERE, null, ex);
@@ -434,7 +450,7 @@ public class GuiStatics {
 
         private static class ChordDisplayPaneHolder {
 
-            private static final ChordDisplayPane INSTANCE 
+            private static final ChordDisplayPane INSTANCE
                     = new ChordDisplayPane();
         }
 
@@ -442,7 +458,6 @@ public class GuiStatics {
             return ChordDisplayPaneHolder.INSTANCE;
         }
     }
-
 
     public static class ChordCenterPane extends StackPane {
 
@@ -467,14 +482,15 @@ public class GuiStatics {
     }
 
     public static class NoteButtonBar extends ToolBar {
+
         private final List<ToggleButton> buttons;
         private final ToggleGroup group;
-        
+
         private NoteButtonBar() {
             buttons = new ArrayList<>();
             group = new ToggleGroup();
             for (Note note : Note.values()) {
-                ToggleButton btn = new ToggleButton(note.getToggleLabel());
+                ToggleButton btn = new ToggleButton(note.getDualLabel());
                 buttons.add(btn);
                 btn.setToggleGroup(group);
                 btn.setPrefWidth(55.0);
@@ -483,68 +499,73 @@ public class GuiStatics {
             this.setOrientation(Orientation.VERTICAL);
             this.setPrefWidth(70.0);
         }
+
         private static class NoteButtonBarHolder {
+
             private static final NoteButtonBar INSTANCE = new NoteButtonBar();
         }
+
         public static NoteButtonBar getInstance() {
             return NoteButtonBarHolder.INSTANCE;
         }
     }
+
     public static class NoteButtonScrollPane extends ScrollPane {
+
         private final NoteButtonBar buttonBar;
-        
+
         private NoteButtonScrollPane() {
             buttonBar = NoteButtonBar.getInstance();
             setContent(buttonBar);
         }
+
         private static class NoteButtonScrollPaneHolder {
+
             private static final NoteButtonScrollPane INSTANCE = new NoteButtonScrollPane();
         }
+
         public static NoteButtonScrollPane getInstance() {
             return NoteButtonScrollPaneHolder.INSTANCE;
         }
     }
-    
+
     public static class ChordListItem implements Comparable<ChordListItem> {
-        private GuitarChord gc;
-        ChordListItem(GuitarChord gc) {
-            this.gc = gc;
+
+        private ChordDbKey key;
+
+        ChordListItem(ChordDbKey key) {
+            this.key = key;
         }
 
-        public GuitarChord getGuitarChord() {
-            return gc;
+        public ChordDbKey getChordDbKey() {
+            return key;
+        }
+
+        public ChordForm getChordForm() {
+            return key.getForm();
+        }
+
+        public Note getChordNote() {
+            return key.getNote();
         }
 
         @Override
         public String toString() {
-            return gc.getLabel();
+            return key.getDualLabel();
         }
 
         @Override
         public int compareTo(ChordListItem o) {
-            int cmpVal = gc.note.compareTo(o.gc.note); 
-            if (cmpVal != 0) return cmpVal;
-            if (gc.labelOrientation != o.gc.labelOrientation) {
-                if (gc.labelOrientation == KeyOrientation.FLATTED
-                        && o.gc.labelOrientation == KeyOrientation.SHARPED) {
-                    return 1;
-                }
-                if (gc.labelOrientation == KeyOrientation.SHARPED
-                        && o.gc.labelOrientation == KeyOrientation.FLATTED) {
-                    return -1;
-                }
-            }
-            cmpVal = gc.form.compareTo(o.gc.form);
-            if (cmpVal != 0) return cmpVal;
-            return gc.variation - o.gc.variation;
+            return this.key.compareTo(o.key);
         }
-        
+
     }
-    
+
     public static class ChordListPane extends HBox {
 
         ListView<ChordListItem> listView;
         ObservableList<ChordListItem> itemList;
+        List<ChordDbKey> keys;
         Collection<GuitarChord> chords;
         Collection<ChordListItem> items;
 
@@ -556,9 +577,10 @@ public class GuiStatics {
 
         private ChordListPane() throws IOException {
             chords = GuitarChordBase.getInstance().getChords();
+            keys = GuitarChordBase.getInstance().getKeys();
             items = new ArrayList<>();
-            for (GuitarChord gc : chords) {
-                items.add(new ChordListItem(gc));
+            for (ChordDbKey key : keys) {
+                items.add(new ChordListItem(key));
             }
             itemList = FXCollections.observableArrayList(items);
             FXCollections.sort(itemList);
@@ -566,7 +588,7 @@ public class GuiStatics {
             this.getChildren().addAll(NoteButtonScrollPane.getInstance(), listView);
             listView.setPrefWidth(200.0);
             VBox.setVgrow(listView, Priority.ALWAYS);
-            
+
             HBox.setHgrow(this, Priority.ALWAYS);
         }
 

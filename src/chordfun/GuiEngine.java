@@ -53,7 +53,7 @@ public class GuiEngine {
                     palettePane.getChildren().clear();
                     try {
                         Collection<GuitarChord> chords = 
-                                GuitarChordBase.getInstance().get(new_val.getGuitarChord().getLabel());
+                                GuitarChordBase.getInstance().get(new_val.getChordDbKey());
                         if (chords != null) {
                             for (GuitarChord chord : chords) {
                                 GuiStatics.ChordCanvas canvas = GuiStatics.ChordCanvas

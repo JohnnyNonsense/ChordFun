@@ -27,7 +27,6 @@ public class ChordFunMain extends Application {
         System.out.println("Application.init()-enter()");
         super.init();
         GuitarChordBase chords = GuitarChordBase.getInstance();
-        System.out.println("G chords: " + chords.get("G"));
         System.out.println("Application.init()-exit()");
     }
     
@@ -37,7 +36,7 @@ public class ChordFunMain extends Application {
         
         Scene scene = new Scene(guiEngine.getRootPane(), 300, 250);
         
-        primaryStage.setTitle("Chords Wow");
+        primaryStage.setTitle("Chords!");
         primaryStage.setScene(scene);
         primaryStage.show();
     }

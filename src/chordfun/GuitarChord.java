@@ -18,15 +18,17 @@ import java.util.regex.Pattern;
 public class GuitarChord {
 
     final String label;
-    final Note note;
+    final ChordId id;
+    //final Note note;
     final KeyOrientation labelOrientation;
-    final ChordForm form;
-    final int variation;
+    //final ChordForm form;
+    //final int variation;
     final Map<Integer, Integer> fretMap;
     final Map<Integer, Integer> fingerMap;
-
+    //final ChordDbKey dbKey;
+    
     public Note getNote() {
-        return note;
+        return id.getNote();
     }
 
     public KeyOrientation getOrientation() {
@@ -34,33 +36,33 @@ public class GuitarChord {
     }
 
     public ChordForm getForm() {
-        return form;
+        return id.getForm();
     }
 
     public int getRootPosition() {
-        return note.ordinal();
+        return getNote().ordinal();
     }
     
     public String getAsciiNote(KeyOrientation orientation) {
         if (orientation == KeyOrientation.NONE) {
-            return note.getAsciiLabel(this.labelOrientation);
+            return getNote().getAsciiLabel(this.labelOrientation);
         }
-        return note.getAsciiLabel(orientation);
+        return getNote().getAsciiLabel(orientation);
     }
     public String getUnicodeNote(KeyOrientation orientation) {
         if (orientation == KeyOrientation.NONE) {
-            return note.getUnicodeLabel(this.labelOrientation);
+            return getNote().getUnicodeLabel(this.labelOrientation);
         }
-        return note.getUnicodeLabel(orientation);
+        return getNote().getUnicodeLabel(orientation);
     }
     
     public String getAsciiLabel(KeyOrientation orientation) {
-        String s = getAsciiNote(orientation) + form.getLabel();
+        String s = getAsciiNote(orientation) + getForm().getLabel();
         return s;
     }
     
     public String getUnicodeLabel(KeyOrientation orientation) {
-        String sUni = getUnicodeNote(orientation) + form.getLabel();
+        String sUni = getUnicodeNote(orientation) + getForm().getLabel();
         return sUni;
     }
     
@@ -69,7 +71,7 @@ public class GuitarChord {
     }
 
     public int getVariation() {
-        return variation;
+        return id.getVariation();
     }
 
     public Map<Integer, Integer> getFretMap() {
@@ -96,8 +98,14 @@ public class GuitarChord {
         return minFret;
     }
     
+    /*
     public String getKey() {
         return label + "/" + ((Integer)variation).toString();
+    }
+    */
+    
+    public ChordDbKey getDbKey() {
+        return id.getKey();
     }
     
     private GuitarChord(String label, int variation, 
@@ -106,17 +114,17 @@ public class GuitarChord {
             Map<Integer, Integer> fret,
             Map<Integer, Integer> finger) {
         this.label = label;
-        this.variation = variation;
-        this.note = note;
         this.labelOrientation = labelOrientation;
-        this.form = form;
         this.fretMap = fret;
         this.fingerMap = finger;
+        this.id = new ChordId(note, form, variation);
     }
 
+    
+    
     public static GuitarChord copy(GuitarChord gc) {
         String label = gc.label;
-        int variation = gc.variation;
+        int variation = gc.getVariation();
         Note note = gc.getNote();
         KeyOrientation orientation = gc.getOrientation();
         ChordForm form = gc.getForm();
@@ -225,9 +233,14 @@ public class GuitarChord {
 
     @Override
     public String toString() {
-        return "GuitarChord{" + "label=" + label + ", note=" + note + ", labelOrientation=" + labelOrientation + ", form=" + form + ", variation=" + variation + ", fretMap=" + fretMap + ", fingerMap=" + fingerMap + '}';
+        return "GuitarChord{" + "label=" + label + ", note=" + getNote() + ", labelOrientation=" + labelOrientation + ", form=" + getForm() + ", variation=" + getVariation() + ", fretMap=" + fretMap + ", fingerMap=" + fingerMap + '}';
     }
 
  
+    public String dragStringOf() {
+        return id.dragStringOf();
+    }
+    
+
 
 }

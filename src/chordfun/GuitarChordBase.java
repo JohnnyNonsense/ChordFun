@@ -35,14 +35,14 @@ public class GuitarChordBase {
         return INSTANCE;
     }
 
-    private Multimap<String, GuitarChord> multimap = null;
+    private Multimap<ChordDbKey, GuitarChord> multimap = null;
 
-    public Collection<GuitarChord> get(String label) {
-        return multimap.get(label);
+    public Collection<GuitarChord> get(ChordDbKey dbKey) {
+        return multimap.get(dbKey);
     }
 
-    public GuitarChord find(String label, int variation) {
-        Collection<GuitarChord> chords = get(label);
+    public GuitarChord find(ChordDbKey dbKey, int variation) {
+        Collection<GuitarChord> chords = get(dbKey);
         if (chords == null) {
             return null;
         }
@@ -54,32 +54,15 @@ public class GuitarChordBase {
         return null;
     }
 
-    public GuitarChord find(String key) {
-        String label = "";
-        int variation = 1;
-        if (key.startsWith("chord|")) {
-            key = key.substring(6);
-        }
-        Pattern p = Pattern.compile("(.*)/(.*)$");
-        Matcher m = p.matcher(key);
-        if (m.matches()) {
-            label = m.group(1);
-            variation = Integer.parseInt(m.group(2));
-            return find(label, variation);
-        }
-        return null;
+    public List<ChordDbKey> getKeys() {
+        ArrayList<ChordDbKey> keys = new ArrayList<>(multimap.keySet());
+        return keys;
     }
-
-    public List<String> getLabels() {
-        ArrayList<String> labels = new ArrayList<>(multimap.keySet());
-        return labels;
-    }
-
     
     public Collection<GuitarChord> getChords() {
         Collection<GuitarChord> chords = new ArrayList<>();
-        for (String s : multimap.keySet()) {
-            Collection c = multimap.get(s);
+        for (ChordDbKey dbKey : multimap.keySet()) {
+            Collection c = multimap.get(dbKey);
             if (c != null) {
                 chords.addAll(c);
             }
@@ -104,7 +87,7 @@ public class GuitarChordBase {
                 if (gc == null) {
                     System.out.println("ERROR: could not create GuitarChord from yaml row: " + row);
                 } else {
-                    multimap.put(gc.getLabel(), gc);
+                    multimap.put(gc.getDbKey(), gc);
                     System.out.println("chord: " + gc);
                 }
             }
