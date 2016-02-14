@@ -5,9 +5,7 @@
  */
 package chordfun;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,230 +15,129 @@ import java.util.regex.Pattern;
  */
 public class GuitarChord {
 
-    final String label;
-    final ChordId id;
-    //final Note note;
-    final KeyOrientation labelOrientation;
-    //final ChordForm form;
-    //final int variation;
-    final Map<Integer, Integer> fretMap;
-    final Map<Integer, Integer> fingerMap;
-    //final ChordDbKey dbKey;
-    
-    public Note getNote() {
-        return id.getNote();
+    private final GuitarChordPrototype prototype;
+    private final Key key;
+    private final int fretOffset; // fretOffset from prototype, 0 for no offset
+
+    public GuitarChordPrototype getPrototype() {
+        return prototype;
     }
 
-    public KeyOrientation getOrientation() {
-        return labelOrientation;
+    public Key getKey() {
+        return key;
     }
 
     public ChordForm getForm() {
-        return id.getForm();
+        return prototype.getForm();
     }
 
-    public int getRootPosition() {
-        return getNote().ordinal();
+    public Note getNote() {
+        return prototype.getNote();
     }
-    
-    public String getAsciiNote(KeyOrientation orientation) {
-        if (orientation == KeyOrientation.NONE) {
-            return getNote().getAsciiLabel(this.labelOrientation);
+
+    public int getFretOffset() {
+        return fretOffset;
+    }
+
+    public boolean isMovable() {
+        return prototype.isMovable();
+    }
+
+    private GuitarChord(GuitarChordPrototype prototype) {
+        this.prototype = prototype;
+        fretOffset = 0;
+        key = prototype.getKey();
+    }
+
+    private GuitarChord(GuitarChordPrototype prototype, Key key) {
+        this.prototype = prototype;
+        this.key = key;
+        Note pNote = prototype.getNote();
+        Note kNote = key.getNote();
+        int tmpOffset = kNote.ordinal() - pNote.ordinal();
+        while (tmpOffset < 0) {
+            tmpOffset += 12;
         }
-        return getNote().getAsciiLabel(orientation);
+        fretOffset = tmpOffset;
     }
-    public String getUnicodeNote(KeyOrientation orientation) {
-        if (orientation == KeyOrientation.NONE) {
-            return getNote().getUnicodeLabel(this.labelOrientation);
+
+    public static GuitarChord create(String dragString) throws IOException {
+        /* consists of a series of integers, separated by "/".
+        They are: 
+        * guitarChord key ordinal
+        * guitarChord fretOffset
+        * prototype id note ordinal
+        * prototype id form ordinal
+        * prototype id variation
+        * prototype key ordinal
+         */
+        if (dragString.startsWith("chord|")) {
+            Pattern p = Pattern.compile("(\\d+)/(\\d+)/(\\d+)/(\\d+)/(\\d+)/(\\d+)$");
+            Matcher m = p.matcher(dragString.substring(6));
+            if (m.matches()) {
+                int gcKeyOrd = Integer.parseInt(m.group(1));
+                int gcFretOff = Integer.parseInt(m.group(2));
+                int protoNoteOrd = Integer.parseInt(m.group(3));
+                int protoFormOrd = Integer.parseInt(m.group(4));
+                int protoVar = Integer.parseInt(m.group(5));
+                int protoKeyOrd = Integer.parseInt(m.group(6));
+                Note dbKeyNote = Note.values()[protoNoteOrd];
+                ChordForm dbKeyForm = ChordForm.values()[protoFormOrd];
+                ChordDbKey dbKey = new ChordDbKey(dbKeyNote, dbKeyForm);
+                GuitarChordDatabase gcd = GuitarChordDatabase.getInstance();
+                GuitarChordPrototype gcp = gcd.find(dbKey, protoVar);
+                if (gcp != null) {
+                    Key key = Key.values()[protoKeyOrd];
+                    GuitarChord gc = GuitarChord.create(gcp, key);
+                    return gc;
+                }
+            }
         }
-        return getNote().getUnicodeLabel(orientation);
+        return null;
     }
-    
-    public String getAsciiLabel(KeyOrientation orientation) {
-        String s = getAsciiNote(orientation) + getForm().getLabel();
+
+    public static GuitarChord create(GuitarChordPrototype prototype) {
+        if (prototype != null) {
+            GuitarChord gc = new GuitarChord(prototype);
+            return gc;
+        }
+        return null;
+    }
+
+    public static GuitarChord create(GuitarChordPrototype prototype, Key key) {
+        if (prototype != null && prototype.isMovable()) {
+            if (key != null && prototype.isMovable()) {
+                GuitarChord gc = new GuitarChord(prototype, key);
+                return gc;
+            } else if (key == null) {
+                GuitarChord gc = new GuitarChord(prototype);
+                return gc;
+            }
+        }
+        return null;
+    }
+
+    public String getAsciiKey() {
+        return key.getLabelAscii();
+    }
+
+    public String getUnicodeKey() {
+        return key.getLabelUnicode();
+    }
+
+    public String getAsciiLabel() {
+        String s = getAsciiKey() + getForm().getLabel();
         return s;
     }
-    
-    public String getUnicodeLabel(KeyOrientation orientation) {
-        String sUni = getUnicodeNote(orientation) + getForm().getLabel();
+
+    public String getUnicodeLabel() {
+        String sUni = getUnicodeKey() + getForm().getLabel();
         return sUni;
     }
-    
-    public String getLabel() {
-        return label;
-    }
 
-    public int getVariation() {
-        return id.getVariation();
-    }
-
-    public Map<Integer, Integer> getFretMap() {
-        return fretMap;
-    }
-
-    public Map<Integer, Integer> getFingerMap() {
-        return fingerMap;
-    }
-
-    public int chordPosition() {
-        int minFret = -1;
-        for (int i = 0; i < 6; i++) {
-            int fret = fretMap.getOrDefault(i, -1);
-            if (fret > -1) {
-                if (minFret == -1) {
-                    minFret = fret;
-                }
-                else if (fret < minFret) {
-                    minFret = fret;
-                }
-            }
-        }
-        return minFret;
-    }
-    
-    /*
-    public String getKey() {
-        return label + "/" + ((Integer)variation).toString();
-    }
-    */
-    
-    public ChordDbKey getDbKey() {
-        return id.getKey();
-    }
-    
-    private GuitarChord(String label, int variation, 
-            Note note, KeyOrientation labelOrientation,
-            ChordForm form,
-            Map<Integer, Integer> fret,
-            Map<Integer, Integer> finger) {
-        this.label = label;
-        this.labelOrientation = labelOrientation;
-        this.fretMap = fret;
-        this.fingerMap = finger;
-        this.id = new ChordId(note, form, variation);
-    }
-
-    
-    
-    public static GuitarChord copy(GuitarChord gc) {
-        String label = gc.label;
-        int variation = gc.getVariation();
-        Note note = gc.getNote();
-        KeyOrientation orientation = gc.getOrientation();
-        ChordForm form = gc.getForm();
-        Map<Integer, Integer> fret = new HashMap<>(gc.fretMap);
-        Map<Integer, Integer> finger = new HashMap<>(gc.fingerMap);
-        GuitarChord newGc = new GuitarChord(label, variation, note, 
-                orientation, form, fret, finger);
-        return newGc;
-    }
-    
-    public static GuitarChord create(ArrayList yaml) {
-        System.out.println("creating guitar chord from yaml");
-        if (yaml == null) {
-            System.out.println("error: yaml is null");
-            return null;
-        }
-        if (yaml.size() != 8) {
-            System.out.println("error: size of yaml is " + yaml.size());
-            return null;
-        }
-        if (!(yaml.get(0) instanceof String)) {
-            System.out.println("Error: first item in yaml row must be a string");
-            return null;
-        }
-        if (!(yaml.get(1) instanceof Integer)) {
-            System.out.println("Error: second item in yaml row must be an integer");
-            return null;
-        }
-        String name = (String)yaml.get(0);
-        int variation = (Integer)yaml.get(1);
-        String[] fingers = new String[6];
-        for (int i = 0; i < 6; i++) {
-            Object o = yaml.get(i+2);
-            if (o instanceof String) {
-                fingers[i] = (String)o;
-            }
-            else if (o instanceof Integer) {
-                fingers[i] = ((Integer)o).toString();
-            }
-            else {
-                System.out.println("Error: wrong item type in yaml row, item index: " + i);
-                return null;
-            }
-        }
-
-        return create(name, variation, fingers);
-    }
-    
-    
-    public static GuitarChord create(String label, int variation, 
-            String fingers) {
-
-        if (label == null || fingers == null) {
-            return null;
-        }
-        String[] split = fingers.trim().split("\\s+");
-        return create(label, variation, split);
-    }
-
-    public static GuitarChord create(String label, int variation, 
-            String[] fingers) {
-        if (label == null || fingers == null) {
-            return null;
-        }
-        if (fingers.length != 6) {
-            return null;
-        }
-        int rootPosition = ChordStatics.labelNote(label);
-        if (rootPosition == -1) {
-            return null;
-        }
-        Note note = Note.values()[rootPosition];
-        KeyOrientation orientation = ChordStatics.labelOrientation(label);
-        ChordForm form = ChordStatics.labelChordForm(label);
-        Map<Integer, Integer> fret = new HashMap<>();
-        Map<Integer, Integer> finger = new HashMap<>();
-        Pattern p = Pattern.compile("(\\d*)/(\\d*)");
-        for (int i = 0; i < 6; i++) {
-            String s = fingers[i];
-            if (s.length() < 1) {
-                return null;
-            } else if (s.startsWith("x")) {
-            } else if (s.equals("0")) {
-                fret.put(i, 0);
-            } else {
-                Matcher m = p.matcher(s);
-                if (m.matches()) {
-                    try {
-                        Integer int1 = Integer.parseUnsignedInt(m.group(1));
-                        Integer int2 = Integer.parseUnsignedInt(m.group(2));
-                        fret.put(i, int1);
-                        finger.put(i, int2);
-                    } catch (NumberFormatException nfe) {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            }
-        }
-        GuitarChord gc = new GuitarChord(label, variation, 
-                note, orientation, form, fret, finger);
-        return gc;
-        
-    }
-
-    @Override
-    public String toString() {
-        return "GuitarChord{" + "label=" + label + ", note=" + getNote() + ", labelOrientation=" + labelOrientation + ", form=" + getForm() + ", variation=" + getVariation() + ", fretMap=" + fretMap + ", fingerMap=" + fingerMap + '}';
-    }
-
- 
     public String dragStringOf() {
-        return id.dragStringOf();
+        String s = "chord|" + key.ordinal() + "/" + fretOffset + "/"
+                + prototype.dragStringOf();
+        return s;
     }
-    
-
-
 }

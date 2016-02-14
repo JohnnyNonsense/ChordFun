@@ -3,6 +3,8 @@
 # show all strings from low E to high E.  
 # Indicate fret #, or 'x' if the string is not strummed
 # put finger number immediately after the fret#, separated by a slash
+# Use 5 for the thumb.  
+# For an open string use either '0', or '0/0'
 - [A, 1, x, 0, 2/2, 2/3, 2/4, 0]
 - [Am, 1, x, 0, 2/2, 2/3, 1/1, 0]
 - [A6, 1, x, 0, 2/1, 2/1, 2/1, 2/1]

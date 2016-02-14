@@ -16,37 +16,35 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.yaml.snakeyaml.Yaml;
 
 /**
  *
  * @author Greg
  */
-public class GuitarChordBase {
+public class GuitarChordDatabase {
 
-    private static GuitarChordBase INSTANCE = null;
+    private static GuitarChordDatabase INSTANCE = null;
 
-    public static GuitarChordBase getInstance() throws IOException {
+    public static GuitarChordDatabase getInstance() throws IOException {
         if (INSTANCE == null) {
-            INSTANCE = new GuitarChordBase();
+            INSTANCE = new GuitarChordDatabase();
         }
         return INSTANCE;
     }
 
-    private Multimap<ChordDbKey, GuitarChord> multimap = null;
+    private Multimap<ChordDbKey, GuitarChordPrototype> multimap = null;
 
-    public Collection<GuitarChord> get(ChordDbKey dbKey) {
+    public Collection<GuitarChordPrototype> get(ChordDbKey dbKey) {
         return multimap.get(dbKey);
     }
 
-    public GuitarChord find(ChordDbKey dbKey, int variation) {
-        Collection<GuitarChord> chords = get(dbKey);
+    public GuitarChordPrototype find(ChordDbKey dbKey, int variation) {
+        Collection<GuitarChordPrototype> chords = get(dbKey);
         if (chords == null) {
             return null;
         }
-        for (GuitarChord gc : chords) {
+        for (GuitarChordPrototype gc : chords) {
             if (gc.getVariation() == variation) {
                 return gc;
             }
@@ -54,13 +52,14 @@ public class GuitarChordBase {
         return null;
     }
 
-    public List<ChordDbKey> getKeys() {
+    
+    public List<ChordDbKey> getDbKeys() {
         ArrayList<ChordDbKey> keys = new ArrayList<>(multimap.keySet());
         return keys;
     }
     
-    public Collection<GuitarChord> getChords() {
-        Collection<GuitarChord> chords = new ArrayList<>();
+    public Collection<GuitarChordPrototype> getChords() {
+        Collection<GuitarChordPrototype> chords = new ArrayList<>();
         for (ChordDbKey dbKey : multimap.keySet()) {
             Collection c = multimap.get(dbKey);
             if (c != null) {
@@ -70,25 +69,26 @@ public class GuitarChordBase {
         return chords;
     }
     
-    private GuitarChordBase() throws FileNotFoundException {
+    private GuitarChordDatabase() throws FileNotFoundException {
         System.out.println("loading chords from file ChordData.yaml");
         multimap = ArrayListMultimap.create();
         Path p = Paths.get("ChordData.yaml");
         InputStream input = new FileInputStream(p.toFile());
         Yaml yaml = new Yaml();
         Object data = yaml.load(input);
-        System.out.println("data loaded: " + data);
+
         System.out.println("data class: " + data.getClass());
         if (data instanceof ArrayList) {
             ArrayList list = (ArrayList) data;
             for (Object item : list) {
                 ArrayList row = (ArrayList) item;
-                GuitarChord gc = GuitarChord.create(row);
+                System.out.println("row: " + row);
+                GuitarChordPrototype gc = GuitarChordPrototype.create(row);
                 if (gc == null) {
                     System.out.println("ERROR: could not create GuitarChord from yaml row: " + row);
                 } else {
                     multimap.put(gc.getDbKey(), gc);
-                    System.out.println("chord: " + gc);
+                    System.out.println("prototype chord: " + gc);
                 }
             }
         }

@@ -101,7 +101,7 @@ public class ChordStatics {
         int i = interval(rootPos, notePos);
         return intervalName(i);
     }
-
+/*
     public static String intervalName(String rootNote, int notePos) {
         int rootPos = labelNote(rootNote);
         if (rootPos >= 0) {
@@ -109,7 +109,8 @@ public class ChordStatics {
         }
         return null;
     }
-
+*/
+/*
     public static String intervalName(String rootNote, String posNote) {
         int rootPos = labelNote(rootNote);
         if (rootPos >= 0) {
@@ -120,39 +121,40 @@ public class ChordStatics {
         }
         return null;
     }
-
-    public static KeyOrientation labelOrientation(String note) {
-        if (note.length() > 1) {
-            if (note.charAt(1) == 'b') {
+*/
+    
+    public static KeyOrientation labelOrientation(String label) {
+        if (label.length() > 1) {
+            if (label.charAt(1) == 'b') {
                 return KeyOrientation.FLATTED;
             }
-            if (note.charAt(1) == '#') {
+            if (label.charAt(1) == '#') {
                 return KeyOrientation.SHARPED;
             }
         }
         return KeyOrientation.NONE;
     }
 
-    public static int labelNote(String note) {
-        Integer pos = notePos.get(note);
-        if (pos != null) {
-            return pos;
+    public static Note labelNote(String label) {
+        Key key = labelKey(label);
+        if (key != null) {
+            return key.getNote();
         }
-        if (note.length() > 1) {
-            pos = notePos.get(note.substring(0, 2));
-            if (pos != null) {
-                return pos;
-            }
-        }
-        if (note.length() > 0) {
-            pos = notePos.get(note.substring(0, 1));
-            if (pos != null) {
-                return pos;
-            }
-        }
-        return -1;
+        return null;
     }
 
+    public static Key labelKey(String label) {
+        KeyOrientation orientation = labelOrientation(label);
+        for (Key key : Key.values()) {
+            if (orientation == key.getOrientation()) {
+                if (label.startsWith(key.getLabelAscii())) {
+                    return key;
+                }
+            }
+        }
+        return null;
+    }
+    
     public static String labelKeyString(String label) {
         if (label.length() < 1) {
             return null;
